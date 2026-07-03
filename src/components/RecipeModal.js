@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useMemo } from 'react';
+import { calculateRecipeNutrition } from '@/lib/nutrition';
 
 export default function RecipeModal({ recipe, ingredientMap, onClose }) {
   const handleKeyDown = useCallback(
@@ -18,6 +19,10 @@ export default function RecipeModal({ recipe, ingredientMap, onClose }) {
       document.body.style.overflow = '';
     };
   }, [handleKeyDown]);
+
+  const nutrition = useMemo(() => {
+    return calculateRecipeNutrition(recipe.recipe_ingredients || []);
+  }, [recipe]);
 
   if (!recipe) return null;
 
@@ -62,6 +67,46 @@ export default function RecipeModal({ recipe, ingredientMap, onClose }) {
               ))}
             </div>
           )}
+
+          {/* Sezione Macro e Kcal */}
+          <h3 className="modal-section-title">📊 Valori Nutrizionali Indicativi</h3>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(4, 1fr)',
+              gap: '8px',
+              padding: '14px',
+              background: 'var(--surface)',
+              borderRadius: 'var(--radius-md)',
+              marginBottom: '24px',
+              textAlign: 'center'
+            }}
+          >
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+              <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Kcal</span>
+              <span style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                {nutrition.kcal}
+              </span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+              <span style={{ fontSize: '0.7rem', color: '#ffb3c1', fontWeight: 600, textTransform: 'uppercase' }}>Carboidrati</span>
+              <span style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                {nutrition.carb}g
+              </span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+              <span style={{ fontSize: '0.7rem', color: 'var(--primary-light)', fontWeight: 600, textTransform: 'uppercase' }}>Proteine</span>
+              <span style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                {nutrition.prot}g
+              </span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+              <span style={{ fontSize: '0.7rem', color: 'var(--warning)', fontWeight: 600, textTransform: 'uppercase' }}>Grassi</span>
+              <span style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+                {nutrition.fat}g
+              </span>
+            </div>
+          </div>
 
           <h3 className="modal-section-title">🧾 Ingredienti</h3>
           <ul className="modal-ingredients-list">
