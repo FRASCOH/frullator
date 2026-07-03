@@ -12,7 +12,32 @@ const STEPS = [
     type: 'filters',
     title: 'Preferenze alimentari 🌿',
     subtitle: 'Quali filtri dietetici o nutrizionali preferisci?',
-  }
+  },
+  {
+    category: 'bevanda',
+    title: 'Scegli la base liquida 🥛',
+    subtitle: 'Quale liquido o bevanda vuoi usare come base?',
+  },
+  {
+    category: 'frutta',
+    title: 'Scegli la frutta 🍎',
+    subtitle: 'Aggiungi la frutta fresca o congelata che preferisci.',
+  },
+  {
+    category: 'verdura',
+    title: 'Aggiungi la verdura 🥬',
+    subtitle: 'Opzionale: aggiungi una nota verde o salutare.',
+  },
+  {
+    category: 'spezia',
+    title: 'Spezie e Superfood 🌶️',
+    subtitle: 'Opzionale: un tocco di sapore extra o nutrienti.',
+  },
+  {
+    category: 'altro',
+    title: 'Altri ingredienti 🥜',
+    subtitle: 'Opzionale: dolcificanti, burro di noci o granola.',
+  },
 ];
 
 export default function StepWizard({ 
@@ -47,7 +72,7 @@ export default function StepWizard({
 
   return (
     <div className="modal-overlay" style={{ zIndex: 900 }}>
-      <div className="modal-content" style={{ maxWidth: '450px', borderRadius: 'var(--radius-2xl)', display: 'flex', flexDirection: 'column' }}>
+      <div className="modal-content" style={{ maxHeight: '90dvh', display: 'flex', flexDirection: 'column' }}>
         <div className="modal-handle">
           <div className="modal-handle-bar" />
         </div>
@@ -83,7 +108,7 @@ export default function StepWizard({
         </div>
 
         {/* Content (Scrollable) */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px', minHeight: '200px' }}>
+        <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px', minHeight: '250px' }}>
           {step.type === 'initial-mode' ? (
             /* Scelta Iniziale: Frigo vs Seleziona da zero */
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginTop: '16px' }}>
@@ -110,28 +135,26 @@ export default function StepWizard({
               <button
                 className="wizard-cta-button"
                 onClick={() => {
-                  // Svuota la selezione temporaneamente
+                  // Svuota la selezione per comporne uno da zero
                   clearSelection();
-                  // Chiude la modale wizard e reindirizza alla selezione ingredienti (griglia)
-                  onClose();
-                  setUiMode('grid');
+                  handleNext();
                 }}
                 style={{ width: '100%', padding: '20px', borderRadius: 'var(--radius-xl)' }}
               >
                 🍎 Seleziona nuovi ingredienti
                 <span className="wizard-cta-subtext" style={{ marginTop: '4px' }}>
-                  Azzera e apri la lista degli ingredienti
+                  Componi il tuo frullato passo dopo passo
                 </span>
               </button>
             </div>
-          ) : (
+          ) : step.type === 'filters' ? (
             /* Preferenze alimentari / Filtri */
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '8px' }}>
               <button
                 className={`category-tab ${activeFilter === 'all' ? 'active' : ''}`}
                 onClick={() => {
                   setActiveFilter('all');
-                  onFinish();
+                  handleNext();
                 }}
                 style={{ width: '100%', padding: '16px', fontSize: '1rem', justifyContent: 'flex-start', borderRadius: 'var(--radius-lg)' }}
               >
@@ -141,7 +164,7 @@ export default function StepWizard({
                 className={`category-tab ${activeFilter === 'vegan' ? 'active' : ''}`}
                 onClick={() => {
                   setActiveFilter('vegan');
-                  onFinish();
+                  handleNext();
                 }}
                 style={{ width: '100%', padding: '16px', fontSize: '1rem', justifyContent: 'flex-start', borderRadius: 'var(--radius-lg)' }}
               >
@@ -151,7 +174,7 @@ export default function StepWizard({
                 className={`category-tab ${activeFilter === 'lactose-free' ? 'active' : ''}`}
                 onClick={() => {
                   setActiveFilter('lactose-free');
-                  onFinish();
+                  handleNext();
                 }}
                 style={{ width: '100%', padding: '16px', fontSize: '1rem', justifyContent: 'flex-start', borderRadius: 'var(--radius-lg)' }}
               >
@@ -161,7 +184,7 @@ export default function StepWizard({
                 className={`category-tab ${activeFilter === 'high-protein' ? 'active' : ''}`}
                 onClick={() => {
                   setActiveFilter('high-protein');
-                  onFinish();
+                  handleNext();
                 }}
                 style={{ width: '100%', padding: '16px', fontSize: '1rem', justifyContent: 'flex-start', borderRadius: 'var(--radius-lg)' }}
               >
@@ -171,12 +194,35 @@ export default function StepWizard({
                 className={`category-tab ${activeFilter === 'low-calorie' ? 'active' : ''}`}
                 onClick={() => {
                   setActiveFilter('low-calorie');
-                  onFinish();
+                  handleNext();
                 }}
                 style={{ width: '100%', padding: '16px', fontSize: '1rem', justifyContent: 'flex-start', borderRadius: 'var(--radius-lg)' }}
               >
                 ⚡ Leggeri (massimo 250 kcal)
               </button>
+            </div>
+          ) : (
+            /* Ingredienti classici per categoria (Basi, Frutta, Verdura, Spezie, Altro) */
+            <div className="ingredient-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(85px, 1fr))' }}>
+              {ingredients
+                .filter((ing) => ing.category === step.category && ing.id !== 66 && ing.id !== 75)
+                .map((ing) => {
+                  const isSelected = selectedIds.has(ing.id);
+                  return (
+                    <button
+                      key={ing.id}
+                      id={`wizard-ingredient-${ing.id}`}
+                      className={`ingredient-card ${isSelected ? 'selected' : ''}`}
+                      onClick={() => onToggle(ing.id)}
+                      aria-pressed={isSelected}
+                      style={{ padding: '12px 4px 8px' }}
+                    >
+                      <span className="ingredient-check" style={{ top: 2, right: 2, width: 16, height: 16, fontSize: '0.55rem' }}>✓</span>
+                      <span className="ingredient-emoji" style={{ fontSize: '1.4rem' }}>{ing.emoji}</span>
+                      <span className="ingredient-name" style={{ fontSize: '0.65rem' }}>{ing.name_it}</span>
+                    </button>
+                  );
+                })}
             </div>
           )}
         </div>
