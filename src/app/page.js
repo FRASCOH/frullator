@@ -320,9 +320,9 @@ export default function Home() {
   if (loading) {
     return (
       <div className="app-container">
-        <div className="hero">
-          <h1 className="hero-logo" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
-            <img src="/icon.svg" alt="Logo" style={{ width: '48px', height: '48px', borderRadius: '12px' }} />
+        <div className="hero" style={{ padding: '8px 0' }}>
+          <h1 className="hero-logo">
+            <img src="/icon.svg" alt="Logo" style={{ width: '44px', height: '44px', borderRadius: '10px' }} />
             Frullator
           </h1>
         </div>
@@ -338,8 +338,8 @@ export default function Home() {
   if (showResults) {
     return (
       <div className="app-container">
-        <div className="hero" style={{ padding: '20px 0 12px' }}>
-          <h1 className="hero-logo" style={{ fontSize: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+        <div className="hero" style={{ padding: '8px 0' }}>
+          <h1 className="hero-logo" style={{ fontSize: '2.2rem' }}>
             <img src="/icon.svg" alt="Logo" style={{ width: '36px', height: '36px', borderRadius: '8px' }} />
             Frullator
           </h1>
@@ -535,14 +535,11 @@ export default function Home() {
       </div>
 
       {/* Hero */}
-      <header className="hero" style={{ padding: '16px 0 12px' }}>
-        <h1 className="hero-logo" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
-          <img src="/icon.svg" alt="Logo" style={{ width: '48px', height: '48px', borderRadius: '12px' }} />
+      <header className="hero" style={{ padding: '8px 0' }}>
+        <h1 className="hero-logo">
+          <img src="/icon.svg" alt="Logo" style={{ width: '44px', height: '44px', borderRadius: '10px' }} />
           Frullator
         </h1>
-        <p className="hero-subtitle">
-          Seleziona gli ingredienti che hai e scopri cosa puoi frullare!
-        </p>
       </header>
 
       {uiMode === 'choice' ? (
