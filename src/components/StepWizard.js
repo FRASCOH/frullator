@@ -116,8 +116,8 @@ export default function StepWizard({
                 <button
                   className="wizard-cta-button primary"
                   onClick={() => {
-                    // Usa il frigo esistente (mantieni selectedIds)
-                    handleNext();
+                    // Chiude il modal ed effettua direttamente il matching/ricerca
+                    onFinish();
                   }}
                   style={{ width: '100%', padding: '20px', borderRadius: 'var(--radius-xl)' }}
                 >
