@@ -29,6 +29,9 @@ export default function Home() {
   const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [isWizardOpen, setIsWizardOpen] = useState(false);
   
+  // 'choice' (due pulsanti) | 'grid' (griglia classica/frigo)
+  const [uiMode, setUiMode] = useState('choice');
+
   // Filtri nutrizionali / dietetici
   // Opzioni: 'all' | 'favorites' | 'vegan' | 'high-protein' | 'low-calorie'
   const [activeFilter, setActiveFilter] = useState('all');
@@ -161,6 +164,23 @@ export default function Home() {
     fetchFavorites();
   }, [user]);
 
+  // Fetch frigorifero (ingredienti salvati) dal DB
+  useEffect(() => {
+    if (!user) return;
+
+    async function fetchFridge() {
+      const { data, error } = await supabase
+        .from('user_fridge')
+        .select('ingredient_id');
+      
+      if (data && !error) {
+        setSelectedIds(new Set(data.map((f) => f.ingredient_id)));
+      }
+    }
+
+    fetchFridge();
+  }, [user]);
+
   // Aggiungi / Rimuovi dai preferiti
   const handleToggleFavorite = async (recipeId) => {
     if (!user) return;
@@ -233,18 +253,40 @@ export default function Home() {
     fetchData();
   }, []);
 
-  // Toggle ingredient
-  const handleToggle = useCallback((id) => {
+  // Toggle ingredient (and optional fridge persistence)
+  const handleToggle = useCallback(async (id) => {
+    let isAdded = false;
     setSelectedIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) {
         next.delete(id);
+        isAdded = false;
       } else {
         next.add(id);
+        isAdded = true;
       }
       return next;
     });
-  }, []);
+
+    // Se l'utente è loggato, salva la selezione nel database (Frigorifero persistente)
+    if (user) {
+      try {
+        if (isAdded) {
+          await supabase
+            .from('user_fridge')
+            .insert({ user_id: user.id, ingredient_id: id });
+        } else {
+          await supabase
+            .from('user_fridge')
+            .delete()
+            .eq('user_id', user.id)
+            .eq('ingredient_id', id);
+        }
+      } catch (e) {
+        console.error('Errore nel salvare la selezione nel frigorifero:', e);
+      }
+    }
+  }, [user]);
 
   // Find smoothies
   const handleFind = useCallback(() => {
@@ -502,86 +544,129 @@ export default function Home() {
         </p>
       </header>
 
-      {/* Step Wizard Trigger Button */}
-      <div className="wizard-cta-container">
-        <button className="wizard-cta-button" onClick={() => setIsWizardOpen(true)}>
-          ✨ Dimmi cosa hai
-        </button>
-      </div>
-
-      {/* Search */}
-      <SearchBar value={searchQuery} onChange={setSearchQuery} />
-
-      {/* Sezione Preferiti in Home Page */}
-      {user && favorites.size > 0 && !searchQuery && (
-        <div style={{ marginBottom: '28px', animation: 'fadeInUp 0.6s var(--ease-out) 0.3s both' }}>
-          <h2 className="section-title">
-            ★ I tuoi preferiti <span className="count">({favorites.size})</span>
-          </h2>
-          <div className="popular-scroll" style={{ display: 'flex', gap: '12px', overflowX: 'auto', scrollbarWidth: 'none', padding: '4px 0 12px', WebkitOverflowScrolling: 'touch' }}>
-            {recipes
-              .filter((r) => favorites.has(r.id))
-              .map((recipe, index) => {
-                const recipeIngs = recipe.recipe_ingredients || [];
-                const emojis = recipeIngs
-                  .slice(0, 5)
-                  .map((ri) => ingredientMap[ri.ingredient_id]?.emoji || '')
-                  .join('');
-                const ingredientNames = recipeIngs
-                  .slice(0, 4)
-                  .map((ri) => ingredientMap[ri.ingredient_id]?.name_it || '')
-                  .filter(Boolean)
-                  .join(', ');
-
-                return (
-                  <div
-                    key={recipe.id}
-                    className="popular-card"
-                    onClick={() => handleRecipeClick(recipe)}
-                    style={{
-                      animationDelay: `${index * 0.1}s`,
-                      border: '1px solid rgba(245, 158, 11, 0.2)',
-                    }}
-                  >
-                    <div
-                      style={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        height: '3px',
-                        background: recipe.color || 'var(--warning)',
-                        borderRadius: 'inherit',
-                      }}
-                    />
-                    <div className="popular-card-rank" style={{ color: 'var(--warning)' }}>
-                      Salvataggio preferito
-                    </div>
-                    <div className="popular-card-name">{recipe.name_it}</div>
-                    <div className="popular-card-ingredients">{ingredientNames}</div>
-                    <div className="popular-card-emojis">{emojis}</div>
-                  </div>
-                );
-              })}
+      {uiMode === 'choice' ? (
+        /* Schermata di scelta principale (due pulsanti) */
+        <div>
+          <div className="wizard-cta-container">
+            <button 
+              className="wizard-cta-button primary" 
+              onClick={() => setIsWizardOpen(true)}
+            >
+              ✨ Dimmi cosa hai
+              <span className="wizard-cta-subtext">Selezione guidata passo-passo</span>
+            </button>
+            
+            <button 
+              className="wizard-cta-button" 
+              onClick={() => setUiMode('grid')}
+            >
+              {user ? '🧊 Gestisci il tuo Frigorifero' : '📝 Lista degli Ingredienti'}
+              <span className="wizard-cta-subtext">
+                {user ? 'Salva e gestisci cosa hai a disposizione' : 'Seleziona tutti gli ingredienti liberamente'}
+              </span>
+            </button>
           </div>
+
+          {/* Sezione Preferiti in Home Page */}
+          {user && favorites.size > 0 && (
+            <div style={{ marginBottom: '28px', animation: 'fadeInUp 0.6s var(--ease-out) 0.3s both' }}>
+              <h2 className="section-title">
+                ★ I tuoi preferiti <span className="count">({favorites.size})</span>
+              </h2>
+              <div className="popular-scroll" style={{ display: 'flex', gap: '12px', overflowX: 'auto', scrollbarWidth: 'none', padding: '4px 0 12px', WebkitOverflowScrolling: 'touch' }}>
+                {recipes
+                  .filter((r) => favorites.has(r.id))
+                  .map((recipe, index) => {
+                    const recipeIngs = recipe.recipe_ingredients || [];
+                    const emojis = recipeIngs
+                      .slice(0, 5)
+                      .map((ri) => ingredientMap[ri.ingredient_id]?.emoji || '')
+                      .join('');
+                    const ingredientNames = recipeIngs
+                      .slice(0, 4)
+                      .map((ri) => ingredientMap[ri.ingredient_id]?.name_it || '')
+                      .filter(Boolean)
+                      .join(', ');
+
+                    return (
+                      <div
+                        key={recipe.id}
+                        className="popular-card"
+                        onClick={() => handleRecipeClick(recipe)}
+                        style={{
+                          animationDelay: `${index * 0.1}s`,
+                          border: '1px solid rgba(245, 158, 11, 0.2)',
+                        }}
+                      >
+                        <div
+                          style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            height: '3px',
+                            background: recipe.color || 'var(--warning)',
+                            borderRadius: 'inherit',
+                          }}
+                        />
+                        <div className="popular-card-rank" style={{ color: 'var(--warning)' }}>
+                          Salvataggio preferito
+                        </div>
+                        <div className="popular-card-name">{recipe.name_it}</div>
+                        <div className="popular-card-ingredients">{ingredientNames}</div>
+                        <div className="popular-card-emojis">{emojis}</div>
+                      </div>
+                    );
+                  })}
+              </div>
+            </div>
+          )}
+        </div>
+      ) : (
+        /* Schermata di selezione libera degli ingredienti (Griglia / Frigorifero) */
+        <div style={{ animation: 'fadeInUp 0.5s var(--ease-out) both' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <h2 className="section-title" style={{ margin: 0 }}>
+              {user ? '🧊 Il tuo Frigorifero' : '📝 Lista Ingredienti'}
+            </h2>
+            <button 
+              onClick={() => setUiMode('choice')}
+              style={{
+                background: 'var(--surface)',
+                border: '1px solid var(--glass-border)',
+                padding: '8px 16px',
+                borderRadius: 'var(--radius-full)',
+                fontSize: '0.85rem',
+                color: 'var(--text-secondary)',
+                cursor: 'pointer'
+              }}
+            >
+              ← Indietro
+            </button>
+          </div>
+
+          {/* Search */}
+          <SearchBar value={searchQuery} onChange={setSearchQuery} />
+
+          {/* Ingredient Grid */}
+          <IngredientGrid
+            ingredients={ingredients}
+            selectedIds={selectedIds}
+            onToggle={handleToggle}
+            searchQuery={searchQuery}
+          />
         </div>
       )}
 
-      {/* Ingredient Grid */}
-      <IngredientGrid
-        ingredients={ingredients}
-        selectedIds={selectedIds}
-        onToggle={handleToggle}
-        searchQuery={searchQuery}
-      />
-
-      {/* Selected Bar (fixed bottom) */}
-      <SelectedBar
-        ingredients={ingredients}
-        selectedIds={selectedIds}
-        onToggle={handleToggle}
-        onFind={handleFind}
-      />
+      {/* Selected Bar (fixed bottom) - solo se in modalità griglia e ci sono ingredienti */}
+      {uiMode === 'grid' && selectedIds.size > 0 && (
+        <SelectedBar
+          ingredients={ingredients}
+          selectedIds={selectedIds}
+          onToggle={handleToggle}
+          onFind={handleFind}
+        />
+      )}
 
       {/* Step-by-step Selection Modal */}
       {isWizardOpen && (

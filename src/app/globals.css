@@ -164,36 +164,71 @@ h1, h2, h3, h4 {
 
 /* ---- Wizard CTA Button ---- */
 .wizard-cta-container {
-  display: flex;
-  justify-content: center;
-  margin: 8px 0 16px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  margin: 16px 0 28px;
   animation: fadeInUp 0.6s var(--ease-out) 0.25s both;
+  padding: 0 8px;
+}
+
+@media (min-width: 480px) {
+  .wizard-cta-container {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 .wizard-cta-button {
   display: flex;
+  flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 8px;
-  padding: 12px 24px;
-  background: var(--gradient-primary);
-  border: none;
-  border-radius: var(--radius-full);
+  padding: 24px 20px;
+  background: var(--surface);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-2xl);
   color: white;
-  font-family: var(--font-sans);
-  font-size: 0.9rem;
-  font-weight: 600;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
   cursor: pointer;
-  box-shadow: var(--shadow-glow-primary);
+  box-shadow: var(--shadow-sm);
   transition: all 0.3s var(--ease-out);
+  text-align: center;
+}
+
+.wizard-cta-button.primary {
+  background: var(--gradient-primary);
+  border-color: transparent;
+  box-shadow: var(--shadow-glow-primary);
 }
 
 .wizard-cta-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 0 24px rgba(124, 58, 237, 0.5);
+  transform: translateY(-4px);
+  background: var(--surface-hover);
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: var(--shadow-md);
+}
+
+.wizard-cta-button.primary:hover {
+  background: var(--gradient-primary);
+  box-shadow: 0 0 28px rgba(124, 58, 237, 0.55);
 }
 
 .wizard-cta-button:active {
-  transform: translateY(0) scale(0.98);
+  transform: scale(0.98);
+}
+
+.wizard-cta-subtext {
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+
+.wizard-cta-button.primary .wizard-cta-subtext {
+  color: rgba(255, 255, 255, 0.8);
 }
 
 /* ---- Search Bar ---- */
