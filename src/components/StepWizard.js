@@ -110,15 +110,17 @@ export default function StepWizard({
               <button
                 className="wizard-cta-button"
                 onClick={() => {
-                  // Svuota la selezione per comporne uno da zero
+                  // Svuota la selezione temporaneamente
                   clearSelection();
-                  handleNext();
+                  // Chiude la modale wizard e reindirizza alla selezione ingredienti (griglia)
+                  onClose();
+                  setUiMode('grid');
                 }}
                 style={{ width: '100%', padding: '20px', borderRadius: 'var(--radius-xl)' }}
               >
                 🍎 Seleziona nuovi ingredienti
                 <span className="wizard-cta-subtext" style={{ marginTop: '4px' }}>
-                  Scegli le tue preferenze alimentari
+                  Azzera e apri la lista degli ingredienti
                 </span>
               </button>
             </div>
