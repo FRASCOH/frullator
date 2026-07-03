@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import IngredientIcon from './IngredientIcon';
 
 const CATEGORIES = [
   { key: 'tutti', label: 'Tutti', emoji: '✨' },
@@ -84,7 +85,7 @@ export default function IngredientGrid({
                 aria-label={`${ing.name_it} ${isSelected ? 'selezionato' : ''}`}
               >
                 <span className="ingredient-check">✓</span>
-                <span className="ingredient-emoji">{ing.emoji}</span>
+                <IngredientIcon name={ing.name_it} emoji={ing.emoji} category={ing.category} />
                 <span className="ingredient-name">{ing.name_it}</span>
               </button>
             );

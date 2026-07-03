@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import IngredientIcon from './IngredientIcon';
 
 const STEPS = [
   {
@@ -218,7 +219,7 @@ export default function StepWizard({
                       style={{ padding: '12px 4px 8px' }}
                     >
                       <span className="ingredient-check" style={{ top: 2, right: 2, width: 16, height: 16, fontSize: '0.55rem' }}>✓</span>
-                      <span className="ingredient-emoji" style={{ fontSize: '1.4rem' }}>{ing.emoji}</span>
+                      <IngredientIcon name={ing.name_it} emoji={ing.emoji} category={ing.category} style={{ fontSize: '1.2rem' }} />
                       <span className="ingredient-name" style={{ fontSize: '0.65rem' }}>{ing.name_it}</span>
                     </button>
                   );
