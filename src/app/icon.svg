@@ -1,3 +1,40 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <text y=".9em" font-size="90">🍹</text>
+  <!-- Rounded Background -->
+  <rect width="100" height="100" rx="22" fill="#121225"/>
+  <rect width="96" height="96" x="2" y="2" rx="20" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="2"/>
+  
+  <!-- Smoothie Cup -->
+  <path d="M35,35 L65,35 L60,75 C60,78 57,80 54,80 L46,80 C43,80 40,78 40,75 Z" fill="url(#smoothie-grad)"/>
+  <path d="M38,75 L62,75 L60,78 C60,80 57,81 54,81 L46,81 C43,81 40,80 40,78 Z" fill="#ff758f"/>
+  
+  <!-- Liquid Swirl / Top Cream -->
+  <path d="M33,35 C33,30 38,26 44,26 C47,26 49,28 52,28 C55,28 58,25 61,25 C65,25 67,29 67,35 Z" fill="#ff758f"/>
+  <circle cx="50" cy="22" r="4" fill="#ff4d6d"/> <!-- Cherry on top -->
+  
+  <!-- Kawaii Eyes -->
+  <circle cx="45" cy="50" r="3.5" fill="#ffffff"/>
+  <circle cx="55" cy="50" r="3.5" fill="#ffffff"/>
+  <circle cx="46" cy="49" r="1.2" fill="#000000"/>
+  <circle cx="56" cy="49" r="1.2" fill="#000000"/>
+  
+  <!-- Kawaii Smile -->
+  <path d="M48,56 Q50,59 52,56" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
+  
+  <!-- Cute Straw -->
+  <path d="M56,12 L62,10 L65,25 L59,27 Z" fill="#ffd166"/>
+  <path d="M58,18 L64,16 L65,21 L59,23 Z" fill="#ff4d6d"/>
+  
+  <!-- Sparkles -->
+  <path d="M22,25 L24,28 L27,29 L24,30 L22,33 L20,30 L17,29 L20,28 Z" fill="#ffd166"/>
+  <path d="M78,65 L80,67 L82,68 L80,69 L78,72 L76,69 L74,68 L76,67 Z" fill="#4ea8de"/>
+  <circle cx="76" cy="25" r="2.5" fill="#ff758f"/>
+
+  <!-- Gradients -->
+  <defs>
+    <linearGradient id="smoothie-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff758f"/>
+      <stop offset="50%" stop-color="#ffb3c1"/>
+      <stop offset="100%" stop-color="#f3c68f"/>
+    </linearGradient>
+  </defs>
 </svg>

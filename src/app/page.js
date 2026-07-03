@@ -162,8 +162,9 @@ export default function Home() {
     return (
       <div className="app-container">
         <div className="hero" style={{ padding: '20px 0 12px' }}>
-          <h1 className="hero-logo" style={{ fontSize: '2rem' }}>
-            <span className="hero-emoji">🍹</span> Frullator
+          <h1 className="hero-logo" style={{ fontSize: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+            <img src="/icon.svg" alt="Logo" style={{ width: '36px', height: '36px', borderRadius: '8px' }} />
+            Frullator
           </h1>
         </div>
 
@@ -222,8 +223,9 @@ export default function Home() {
     <div className="app-container">
       {/* Hero */}
       <header className="hero">
-        <h1 className="hero-logo">
-          <span className="hero-emoji">🍹</span> Frullator
+        <h1 className="hero-logo" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
+          <img src="/icon.svg" alt="Logo" style={{ width: '48px', height: '48px', borderRadius: '12px' }} />
+          Frullator
         </h1>
         <p className="hero-subtitle">
           Seleziona gli ingredienti che hai e scopri cosa puoi frullare!
