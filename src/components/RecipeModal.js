@@ -3,7 +3,7 @@
 import { useEffect, useCallback, useMemo } from 'react';
 import { calculateRecipeNutrition } from '@/lib/nutrition';
 
-export default function RecipeModal({ recipe, ingredientMap, onClose }) {
+export default function RecipeModal({ recipe, ingredientMap, onClose, user, isFavorite, onToggleFavorite }) {
   const handleKeyDown = useCallback(
     (e) => {
       if (e.key === 'Escape') onClose();
@@ -41,10 +41,35 @@ export default function RecipeModal({ recipe, ingredientMap, onClose }) {
         </div>
 
         <div className="modal-body">
-          <h2 className="modal-recipe-name">{recipe.name_it}</h2>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px' }}>
+            <h2 className="modal-recipe-name" style={{ flex: 1 }}>{recipe.name_it}</h2>
+            {user && (
+              <button
+                onClick={() => onToggleFavorite(recipe.id)}
+                style={{
+                  background: 'var(--surface)',
+                  border: isFavorite ? '1px solid var(--warning)' : '1px solid var(--glass-border)',
+                  borderRadius: '50%',
+                  width: '40px',
+                  height: '40px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '1.2rem',
+                  cursor: 'pointer',
+                  color: isFavorite ? 'var(--warning)' : 'var(--text-muted)',
+                  transition: 'all 0.2s',
+                  marginTop: '2px'
+                }}
+                aria-label={isFavorite ? 'Rimuovi dai preferiti' : 'Aggiungi ai preferiti'}
+              >
+                ★
+              </button>
+            )}
+          </div>
 
           {recipe.description_it && (
-            <p className="modal-recipe-desc">{recipe.description_it}</p>
+            <p className="modal-recipe-desc" style={{ marginTop: '8px' }}>{recipe.description_it}</p>
           )}
 
           <div className="modal-recipe-meta">

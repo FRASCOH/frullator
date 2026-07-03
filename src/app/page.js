@@ -9,12 +9,18 @@ import RecipeCard from '@/components/RecipeCard';
 import RecipeModal from '@/components/RecipeModal';
 import PopularSection from '@/components/PopularSection';
 import StepWizard from '@/components/StepWizard';
+import AuthModal from '@/components/AuthModal';
 
 export default function Home() {
   // Data
   const [ingredients, setIngredients] = useState([]);
   const [recipes, setRecipes] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // Auth & Favorites state
+  const [user, setUser] = useState(null);
+  const [favorites, setFavorites] = useState(new Set()); // Insieme di recipe_id preferiti
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
 
   // UI State
   const [selectedIds, setSelectedIds] = useState(new Set());
@@ -24,7 +30,7 @@ export default function Home() {
   const [isWizardOpen, setIsWizardOpen] = useState(false);
   
   // Filtri nutrizionali / dietetici
-  // Opzioni: 'all' | 'high-protein' | 'low-calorie' | 'vegan'
+  // Opzioni: 'all' | 'favorites' | 'vegan' | 'high-protein' | 'low-calorie'
   const [activeFilter, setActiveFilter] = useState('all');
 
   // Ingredient lookup map
@@ -80,7 +86,9 @@ export default function Home() {
     filteredRecipes = filteredRecipes.filter((r) => r.matchPercent >= 50);
 
     // Applica Filtri Alimentari / Obiettivi Fitness
-    if (activeFilter === 'high-protein') {
+    if (activeFilter === 'favorites') {
+      filteredRecipes = filteredRecipes.filter((r) => favorites.has(r.id));
+    } else if (activeFilter === 'high-protein') {
       filteredRecipes = filteredRecipes.filter((r) => {
         const nut = recipeNutritionMap[r.id];
         return nut && nut.prot >= 15; // Almeno 15g di proteine
@@ -101,7 +109,77 @@ export default function Home() {
       if (b.matchPercent !== a.matchPercent) return b.matchPercent - a.matchPercent;
       return (b.popularity || 0) - (a.popularity || 0);
     });
-  }, [recipes, selectedIds, activeFilter, recipeNutritionMap]);
+  }, [recipes, selectedIds, activeFilter, favorites, recipeNutritionMap]);
+
+  // Gestione caricamento sessione e preferiti
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Fetch preferiti dal DB
+  useEffect(() => {
+    if (!user) {
+      setFavorites(new Set());
+      return;
+    }
+
+    async function fetchFavorites() {
+      const { data, error } = await supabase
+        .from('user_favorites')
+        .select('recipe_id');
+      
+      if (data && !error) {
+        setFavorites(new Set(data.map((f) => f.recipe_id)));
+      }
+    }
+
+    fetchFavorites();
+  }, [user]);
+
+  // Aggiungi / Rimuovi dai preferiti
+  const handleToggleFavorite = async (recipeId) => {
+    if (!user) return;
+
+    const isFav = favorites.has(recipeId);
+    
+    if (isFav) {
+      // Rimuovi
+      const { error } = await supabase
+        .from('user_favorites')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('recipe_id', recipeId);
+      
+      if (!error) {
+        setFavorites((prev) => {
+          const next = new Set(prev);
+          next.delete(recipeId);
+          return next;
+        });
+      }
+    } else {
+      // Aggiungi
+      const { error } = await supabase
+        .from('user_favorites')
+        .insert({ user_id: user.id, recipe_id: recipeId });
+      
+      if (!error) {
+        setFavorites((prev) => {
+          const next = new Set(prev);
+          next.add(recipeId);
+          return next;
+        });
+      }
+    }
+  };
 
   // Fetch data
   useEffect(() => {
@@ -235,6 +313,14 @@ export default function Home() {
             >
               🥗 Tutti i frullati
             </button>
+            {user && (
+              <button
+                className={`category-tab ${activeFilter === 'favorites' ? 'active' : ''}`}
+                onClick={() => setActiveFilter('favorites')}
+              >
+                ★ Preferiti
+              </button>
+            )}
             <button
               className={`category-tab ${activeFilter === 'vegan' ? 'active' : ''}`}
               onClick={() => setActiveFilter('vegan')}
@@ -286,6 +372,9 @@ export default function Home() {
             recipe={selectedRecipe}
             ingredientMap={ingredientMap}
             onClose={() => setSelectedRecipe(null)}
+            user={user}
+            isFavorite={favorites.has(selectedRecipe.id)}
+            onToggleFavorite={handleToggleFavorite}
           />
         )}
       </div>
@@ -295,8 +384,56 @@ export default function Home() {
   // Main ingredient selection view
   return (
     <div className="app-container">
+      {/* Auth Status/Control Header Bar */}
+      <div 
+        style={{ 
+          display: 'flex', 
+          justifyContent: 'flex-end', 
+          padding: '12px 0 0',
+          animation: 'fadeInUp 0.6s var(--ease-out) both'
+        }}
+      >
+        {user ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+              👋 {user.email.split('@')[0]}
+            </span>
+            <button
+              onClick={() => supabase.auth.signOut()}
+              style={{
+                background: 'var(--surface)',
+                border: '1px solid var(--glass-border)',
+                padding: '6px 12px',
+                borderRadius: 'var(--radius-full)',
+                fontSize: '0.75rem',
+                color: 'var(--text-primary)',
+                cursor: 'pointer'
+              }}
+            >
+              Esci
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={() => setIsAuthOpen(true)}
+            style={{
+              background: 'var(--surface)',
+              border: '1px solid var(--glass-border)',
+              padding: '6px 12px',
+              borderRadius: 'var(--radius-full)',
+              fontSize: '0.78rem',
+              color: 'var(--primary-light)',
+              fontWeight: 600,
+              cursor: 'pointer'
+            }}
+          >
+            🔑 Accedi / Registrati
+          </button>
+        )}
+      </div>
+
       {/* Hero */}
-      <header className="hero">
+      <header className="hero" style={{ padding: '16px 0 24px' }}>
         <h1 className="hero-logo" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
           <img src="/icon.svg" alt="Logo" style={{ width: '48px', height: '48px', borderRadius: '12px' }} />
           Frullator
@@ -355,12 +492,23 @@ export default function Home() {
         />
       )}
 
+      {/* Auth Modal Popup */}
+      {isAuthOpen && (
+        <AuthModal
+          onClose={() => setIsAuthOpen(false)}
+          onAuthSuccess={(u) => setUser(u)}
+        />
+      )}
+
       {/* Modal */}
       {selectedRecipe && (
         <RecipeModal
           recipe={selectedRecipe}
           ingredientMap={ingredientMap}
           onClose={() => setSelectedRecipe(null)}
+          user={user}
+          isFavorite={favorites.has(selectedRecipe.id)}
+          onToggleFavorite={handleToggleFavorite}
         />
       )}
     </div>
