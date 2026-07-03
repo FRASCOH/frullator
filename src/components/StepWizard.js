@@ -144,7 +144,7 @@ export default function StepWizard({
             /* Ingredienti classici per categoria */
             <div className="ingredient-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(85px, 1fr))' }}>
               {ingredients
-                .filter((ing) => ing.category === step.category)
+                .filter((ing) => ing.category === step.category && ing.id !== 66 && ing.id !== 75)
                 .map((ing) => {
                   const isSelected = selectedIds.has(ing.id);
                   return (

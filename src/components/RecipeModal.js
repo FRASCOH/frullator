@@ -135,38 +135,42 @@ export default function RecipeModal({ recipe, ingredientMap, onClose, user, isFa
 
           <h3 className="modal-section-title">🧾 Ingredienti</h3>
           <ul className="modal-ingredients-list">
-            {requiredIngs.map((ri) => {
-              const ing = ingredientMap[ri.ingredient_id];
-              if (!ing) return null;
-              return (
-                <li key={ri.ingredient_id} className="modal-ingredient-item">
-                  <span className="modal-ingredient-name">
-                    <span className="ing-emoji">{ing.emoji}</span>
-                    {ing.name_it}
-                  </span>
-                  <span className="modal-ingredient-qty">{ri.quantity}</span>
-                </li>
-              );
-            })}
-            {optionalIngs.map((ri) => {
-              const ing = ingredientMap[ri.ingredient_id];
-              if (!ing) return null;
-              return (
-                <li
-                  key={ri.ingredient_id}
-                  className="modal-ingredient-item optional-ing"
-                >
-                  <span className="modal-ingredient-name">
-                    <span className="ing-emoji">{ing.emoji}</span>
-                    {ing.name_it}
-                    <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginLeft: 4 }}>
-                      (opzionale)
+            {requiredIngs
+              .filter((ri) => ri.ingredient_id !== 66) // Nascondiamo l'acqua
+              .map((ri) => {
+                const ing = ingredientMap[ri.ingredient_id];
+                if (!ing) return null;
+                return (
+                  <li key={ri.ingredient_id} className="modal-ingredient-item">
+                    <span className="modal-ingredient-name">
+                      <span className="ing-emoji">{ing.emoji}</span>
+                      {ing.name_it}
                     </span>
-                  </span>
-                  <span className="modal-ingredient-qty">{ri.quantity}</span>
-                </li>
-              );
-            })}
+                    <span className="modal-ingredient-qty">{ri.quantity}</span>
+                  </li>
+                );
+              })}
+            {optionalIngs
+              .filter((ri) => ri.ingredient_id !== 66) // Nascondiamo l'acqua
+              .map((ri) => {
+                const ing = ingredientMap[ri.ingredient_id];
+                if (!ing) return null;
+                return (
+                  <li
+                    key={ri.ingredient_id}
+                    className="modal-ingredient-item optional-ing"
+                  >
+                    <span className="modal-ingredient-name">
+                      <span className="ing-emoji">{ing.emoji}</span>
+                      {ing.name_it}
+                      <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginLeft: 4 }}>
+                        (opzionale)
+                      </span>
+                    </span>
+                    <span className="modal-ingredient-qty">{ri.quantity}</span>
+                  </li>
+                );
+              })}
           </ul>
 
           <h3 className="modal-section-title">📝 Preparazione</h3>

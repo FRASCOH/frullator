@@ -19,8 +19,13 @@ export default function IngredientGrid({
 }) {
   const [activeCategory, setActiveCategory] = useState('tutti');
 
+  // Escludiamo Acqua (ID: 66) e Ghiaccio (ID: 75) dalla griglia degli ingredienti
+  const visibleIngredients = useMemo(() => {
+    return ingredients.filter((ing) => ing.id !== 66 && ing.id !== 75);
+  }, [ingredients]);
+
   const filtered = useMemo(() => {
-    let list = ingredients;
+    let list = visibleIngredients;
 
     if (activeCategory !== 'tutti') {
       list = list.filter((ing) => ing.category === activeCategory);
@@ -36,15 +41,15 @@ export default function IngredientGrid({
     }
 
     return list;
-  }, [ingredients, activeCategory, searchQuery]);
+  }, [visibleIngredients, activeCategory, searchQuery]);
 
   const categoryCounts = useMemo(() => {
-    const counts = { tutti: ingredients.length };
-    ingredients.forEach((ing) => {
+    const counts = { tutti: visibleIngredients.length };
+    visibleIngredients.forEach((ing) => {
       counts[ing.category] = (counts[ing.category] || 0) + 1;
     });
     return counts;
-  }, [ingredients]);
+  }, [visibleIngredients]);
 
   return (
     <div className="ingredients-section">
