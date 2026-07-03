@@ -9,6 +9,19 @@ export const metadata = {
     title: "Frullator 🍹",
     description: "Trova il tuo frullato perfetto con gli ingredienti che hai!",
     type: "website",
+    images: [
+      {
+        url: "/logo.png",
+        width: 512,
+        height: 512,
+        alt: "Frullator Logo",
+      },
+    ],
+  },
+  icons: {
+    icon: "/icon.svg",
+    shortcut: "/icon.svg",
+    apple: "/logo.png",
   },
 };
 
