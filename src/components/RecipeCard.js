@@ -57,15 +57,29 @@ export default function RecipeCard({
         </span>
       </div>
 
-      {recipe.tags && recipe.tags.length > 0 && (
-        <div className="recipe-card-tags">
-          {recipe.tags.slice(0, 3).map((tag) => (
-            <span key={tag} className="recipe-tag">
-              {tag}
-            </span>
-          ))}
-        </div>
-      )}
+      {/* Badge Dietetici e Nutrizionali */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', margin: '4px 0 10px' }}>
+        {recipe.tags && recipe.tags.includes('vegano') && (
+          <span style={{ fontSize: '0.68rem', padding: '3px 8px', borderRadius: 'var(--radius-md)', background: 'rgba(16, 185, 129, 0.12)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.25)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+            🌱 Vegan
+          </span>
+        )}
+        {recipe.tags && recipe.tags.includes('senza lattosio') && (
+          <span style={{ fontSize: '0.68rem', padding: '3px 8px', borderRadius: 'var(--radius-md)', background: 'rgba(6, 182, 212, 0.12)', color: '#06b6d4', border: '1px solid rgba(6, 182, 212, 0.25)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+            🥛 Senza Lattosio
+          </span>
+        )}
+        {recipe.protein_grams >= 15 && (
+          <span style={{ fontSize: '0.68rem', padding: '3px 8px', borderRadius: 'var(--radius-md)', background: 'rgba(124, 58, 237, 0.12)', color: '#a78bfa', border: '1px solid rgba(124, 58, 237, 0.25)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+            💪 Proteico
+          </span>
+        )}
+        {recipe.calories_kcal <= 250 && (
+          <span style={{ fontSize: '0.68rem', padding: '3px 8px', borderRadius: 'var(--radius-md)', background: 'rgba(245, 158, 11, 0.12)', color: '#f59e0b', border: '1px solid rgba(245, 158, 11, 0.25)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+            ⚡ Leggero
+          </span>
+        )}
+      </div>
 
       <div className="recipe-card-ingredients">
         {recipeIngs.map((ri) => {
