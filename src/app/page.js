@@ -321,13 +321,14 @@ export default function Home() {
     return (
       <div className="app-container">
         <div className="hero">
-          <h1 className="hero-logo">
-            <span className="hero-emoji">🍹</span> Frullator
+          <h1 className="hero-logo" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
+            <img src="/icon.svg" alt="Logo" style={{ width: '48px', height: '48px', borderRadius: '12px' }} />
+            Frullator
           </h1>
         </div>
         <div className="loading-container">
-          <div className="loading-spinner" />
-          <span className="loading-text">Caricamento ingredienti...</span>
+          <div className="loading-shaker" />
+          <span className="loading-text">Frullando gli ingredienti...</span>
         </div>
       </div>
     );
