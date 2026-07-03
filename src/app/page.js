@@ -63,7 +63,8 @@ export default function Home() {
 
   // Matched recipes — sorted by match percentage and filters
   const matchedRecipes = useMemo(() => {
-    if (selectedIds.size === 0) return [];
+    // Rimuoviamo il blocco obbligatorio sull'avere ingredienti selezionati se il filtro attivo è 'favorites'
+    if (selectedIds.size === 0 && activeFilter !== 'favorites') return [];
 
     let filteredRecipes = recipes.map((recipe) => {
       const recipeIngs = recipe.recipe_ingredients || [];
@@ -82,8 +83,10 @@ export default function Home() {
       return { ...recipe, matchPercent, haveCount, totalRequired };
     });
 
-    // Applica soglia di match (mostra da 50% in su)
-    filteredRecipes = filteredRecipes.filter((r) => r.matchPercent >= 50);
+    // Applica soglia di match (se non siamo nella sezione preferiti generica)
+    if (activeFilter !== 'favorites') {
+      filteredRecipes = filteredRecipes.filter((r) => r.matchPercent >= 50);
+    }
 
     // Applica Filtri Alimentari / Obiettivi Fitness
     if (activeFilter === 'favorites') {
@@ -240,6 +243,7 @@ export default function Home() {
   // Go back to ingredients
   const handleBack = useCallback(() => {
     setShowResults(false);
+    setActiveFilter('all'); // Ripristina il filtro a 'all'
   }, []);
 
   // Increment popularity on recipe click
@@ -398,6 +402,27 @@ export default function Home() {
             <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
               👋 {user.email.split('@')[0]}
             </span>
+            <button
+              onClick={() => {
+                // Simula il click sul "Trova frullati" per andare nella schermata risultati
+                // E imposta direttamente il filtro attivo a preferiti
+                setActiveFilter('favorites');
+                // Seleziona un ingrediente fake o imposta showResults a true
+                setShowResults(true);
+              }}
+              style={{
+                background: 'rgba(245, 158, 11, 0.15)',
+                border: '1px solid rgba(245, 158, 11, 0.4)',
+                padding: '6px 12px',
+                borderRadius: 'var(--radius-full)',
+                fontSize: '0.78rem',
+                color: 'var(--warning)',
+                fontWeight: 600,
+                cursor: 'pointer'
+              }}
+            >
+              ★ Preferiti ({favorites.size})
+            </button>
             <button
               onClick={() => supabase.auth.signOut()}
               style={{
