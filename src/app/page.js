@@ -22,6 +22,10 @@ export default function Home() {
   const [showResults, setShowResults] = useState(false);
   const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [isWizardOpen, setIsWizardOpen] = useState(false);
+  
+  // Filtri nutrizionali / dietetici
+  // Opzioni: 'all' | 'high-protein' | 'low-calorie' | 'vegan'
+  const [activeFilter, setActiveFilter] = useState('all');
 
   // Ingredient lookup map
   const ingredientMap = useMemo(() => {
@@ -32,6 +36,17 @@ export default function Home() {
     return map;
   }, [ingredients]);
 
+  // Tabella nutrizionale importata dinamicamente o calcolata
+  const recipeNutritionMap = useMemo(() => {
+    const map = {};
+    // Importa dinamicamente le informazioni nutrizionali
+    const { calculateRecipeNutrition } = require('@/lib/nutrition');
+    recipes.forEach((recipe) => {
+      map[recipe.id] = calculateRecipeNutrition(recipe.recipe_ingredients || []);
+    });
+    return map;
+  }, [recipes]);
+
   // Popular recipes (top 8 by popularity)
   const popularRecipes = useMemo(() => {
     return recipes
@@ -40,30 +55,53 @@ export default function Home() {
       .slice(0, 8);
   }, [recipes]);
 
-  // Matched recipes — sorted by match percentage
+  // Matched recipes — sorted by match percentage and filters
   const matchedRecipes = useMemo(() => {
     if (selectedIds.size === 0) return [];
 
-    return recipes
-      .map((recipe) => {
-        const recipeIngs = recipe.recipe_ingredients || [];
-        const required = recipeIngs.filter((ri) => !ri.is_optional);
-        const haveCount = required.filter((ri) =>
-          selectedIds.has(ri.ingredient_id)
-        ).length;
-        const totalRequired = required.length;
-        const matchPercent =
-          totalRequired > 0 ? (haveCount / totalRequired) * 100 : 0;
+    let filteredRecipes = recipes.map((recipe) => {
+      const recipeIngs = recipe.recipe_ingredients || [];
+      const required = recipeIngs.filter((ri) => !ri.is_optional);
+      
+      // Consideriamo Acqua (ID: 66) e Ghiaccio (ID: 75) come sempre posseduti
+      const checkHave = (ingredientId) => {
+        return selectedIds.has(ingredientId) || ingredientId === 66 || ingredientId === 75;
+      };
 
-        return { ...recipe, matchPercent, haveCount, totalRequired };
-      })
-      .filter((r) => r.matchPercent >= 50) // Show recipes with at least 50% match
-      .sort((a, b) => {
-        // Full matches first, then by match %, then by popularity
-        if (b.matchPercent !== a.matchPercent) return b.matchPercent - a.matchPercent;
-        return (b.popularity || 0) - (a.popularity || 0);
+      const haveCount = required.filter((ri) => checkHave(ri.ingredient_id)).length;
+      const totalRequired = required.length;
+      const matchPercent =
+        totalRequired > 0 ? (haveCount / totalRequired) * 100 : 0;
+
+      return { ...recipe, matchPercent, haveCount, totalRequired };
+    });
+
+    // Applica soglia di match (mostra da 50% in su)
+    filteredRecipes = filteredRecipes.filter((r) => r.matchPercent >= 50);
+
+    // Applica Filtri Alimentari / Obiettivi Fitness
+    if (activeFilter === 'high-protein') {
+      filteredRecipes = filteredRecipes.filter((r) => {
+        const nut = recipeNutritionMap[r.id];
+        return nut && nut.prot >= 15; // Almeno 15g di proteine
       });
-  }, [recipes, selectedIds]);
+    } else if (activeFilter === 'low-calorie') {
+      filteredRecipes = filteredRecipes.filter((r) => {
+        const nut = recipeNutritionMap[r.id];
+        return nut && nut.kcal <= 250; // Massimo 250 Kcal
+      });
+    } else if (activeFilter === 'vegan') {
+      filteredRecipes = filteredRecipes.filter((r) => {
+        // Verifica se tra i tag c'è 'vegano'
+        return r.tags && r.tags.includes('vegano');
+      });
+    }
+
+    return filteredRecipes.sort((a, b) => {
+      if (b.matchPercent !== a.matchPercent) return b.matchPercent - a.matchPercent;
+      return (b.popularity || 0) - (a.popularity || 0);
+    });
+  }, [recipes, selectedIds, activeFilter, recipeNutritionMap]);
 
   // Fetch data
   useEffect(() => {
@@ -169,7 +207,7 @@ export default function Home() {
         </div>
 
         <div className="results-section">
-          <div className="results-header">
+          <div className="results-header" style={{ marginBottom: '12px' }}>
             <div>
               <h2 className="results-title">I tuoi frullati</h2>
               <span className="results-count">
@@ -178,6 +216,42 @@ export default function Home() {
             </div>
             <button className="results-back" onClick={handleBack}>
               ← Ingredienti
+            </button>
+          </div>
+
+          {/* Filtri Alimentari / Diete */}
+          <div 
+            className="category-tabs" 
+            style={{ 
+              padding: '4px 0 16px', 
+              borderBottom: '1px solid var(--glass-border)',
+              marginBottom: '16px',
+              animationDelay: '0.1s'
+            }}
+          >
+            <button
+              className={`category-tab ${activeFilter === 'all' ? 'active' : ''}`}
+              onClick={() => setActiveFilter('all')}
+            >
+              🥗 Tutti i frullati
+            </button>
+            <button
+              className={`category-tab ${activeFilter === 'vegan' ? 'active' : ''}`}
+              onClick={() => setActiveFilter('vegan')}
+            >
+              🌱 Vegano
+            </button>
+            <button
+              className={`category-tab ${activeFilter === 'high-protein' ? 'active' : ''}`}
+              onClick={() => setActiveFilter('high-protein')}
+            >
+              💪 Proteici (&ge;15g)
+            </button>
+            <button
+              className={`category-tab ${activeFilter === 'low-calorie' ? 'active' : ''}`}
+              onClick={() => setActiveFilter('low-calorie')}
+            >
+              🔥 Low Kcal (&le;250)
             </button>
           </div>
 

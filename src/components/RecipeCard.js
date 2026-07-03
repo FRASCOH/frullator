@@ -10,7 +10,13 @@ export default function RecipeCard({
 }) {
   const recipeIngs = recipe.recipe_ingredients || [];
   const requiredIngs = recipeIngs.filter((ri) => !ri.is_optional);
-  const haveCount = requiredIngs.filter((ri) => selectedIds.has(ri.ingredient_id)).length;
+  
+  // Acqua (ID: 66) e Ghiaccio (ID: 75) sono considerati sempre posseduti
+  const checkHave = (ingredientId) => {
+    return selectedIds.has(ingredientId) || ingredientId === 66 || ingredientId === 75;
+  };
+
+  const haveCount = requiredIngs.filter((ri) => checkHave(ri.ingredient_id)).length;
   const totalRequired = requiredIngs.length;
   const matchPercent = totalRequired > 0 ? Math.round((haveCount / totalRequired) * 100) : 0;
   const isFullMatch = matchPercent === 100;
@@ -65,7 +71,7 @@ export default function RecipeCard({
         {recipeIngs.map((ri) => {
           const ing = ingredientMap[ri.ingredient_id];
           if (!ing) return null;
-          const have = selectedIds.has(ri.ingredient_id);
+          const have = checkHave(ri.ingredient_id);
           const cls = ri.is_optional ? 'optional' : have ? 'have' : 'missing';
           return (
             <span key={ri.ingredient_id} className={`recipe-ingredient-pill ${cls}`}>
