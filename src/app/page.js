@@ -553,7 +553,7 @@ export default function Home() {
               className="wizard-cta-button primary" 
               onClick={() => setIsWizardOpen(true)}
             >
-              ✨ Dimmi cosa hai
+              ✨ Crea frullato
               <span className="wizard-cta-subtext">Selezione guidata passo-passo</span>
             </button>
             
@@ -677,6 +677,9 @@ export default function Home() {
           onToggle={handleToggle}
           activeFilter={activeFilter}
           setActiveFilter={setActiveFilter}
+          user={user}
+          setUiMode={setUiMode}
+          clearSelection={() => setSelectedIds(new Set())}
           onFinish={() => {
             setIsWizardOpen(false);
             handleFind();

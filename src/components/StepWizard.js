@@ -4,6 +4,11 @@ import { useState } from 'react';
 
 const STEPS = [
   {
+    type: 'initial-mode',
+    title: 'Da dove iniziamo? 🍹',
+    subtitle: 'Vuoi usare gli ingredienti salvati nel tuo frigo o comporne uno nuovo da zero?',
+  },
+  {
     type: 'filters',
     title: 'Preferenze alimentari 🌿',
     subtitle: 'Quali filtri dietetici o nutrizionali preferisci?',
@@ -42,7 +47,10 @@ export default function StepWizard({
   onFinish, 
   onClose,
   activeFilter,
-  setActiveFilter
+  setActiveFilter,
+  user,
+  setUiMode,
+  clearSelection
 }) {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
 
@@ -101,7 +109,45 @@ export default function StepWizard({
 
         {/* Content (Scrollable) */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px', minHeight: '250px' }}>
-          {step.type === 'filters' ? (
+          {step.type === 'initial-mode' ? (
+            /* Scelta Iniziale: Frigo vs Seleziona da zero */
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginTop: '16px' }}>
+              {user ? (
+                <button
+                  className="wizard-cta-button primary"
+                  onClick={() => {
+                    // Usa il frigo esistente (mantieni selectedIds)
+                    handleNext();
+                  }}
+                  style={{ width: '100%', padding: '20px', borderRadius: 'var(--radius-xl)' }}
+                >
+                  🧊 Usa il mio Frigorifero
+                  <span className="wizard-cta-subtext" style={{ color: 'rgba(255,255,255,0.8)', marginTop: '4px' }}>
+                    Trova ricette usando quello che hai già salvato
+                  </span>
+                </button>
+              ) : (
+                <div style={{ padding: '12px', background: 'rgba(255,255,255,0.03)', border: '1px dashed var(--glass-border)', borderRadius: 'var(--radius-lg)', textAlign: 'center', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                  💡 Se avessi effettuato l'accesso, potresti usare gli ingredienti salvati nel tuo frigorifero persistente.
+                </div>
+              )}
+              
+              <button
+                className="wizard-cta-button"
+                onClick={() => {
+                  // Svuota la selezione per comporne uno da zero
+                  clearSelection();
+                  handleNext();
+                }}
+                style={{ width: '100%', padding: '20px', borderRadius: 'var(--radius-xl)' }}
+              >
+                🍎 Seleziona nuovi ingredienti
+                <span className="wizard-cta-subtext" style={{ marginTop: '4px' }}>
+                  Azzera la selezione e componi da capo
+                </span>
+              </button>
+            </div>
+          ) : step.type === 'filters' ? (
             /* Preferenze alimentari / Filtri */
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '8px' }}>
               <button
