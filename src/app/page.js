@@ -8,6 +8,7 @@ import SelectedBar from '@/components/SelectedBar';
 import RecipeCard from '@/components/RecipeCard';
 import RecipeModal from '@/components/RecipeModal';
 import PopularSection from '@/components/PopularSection';
+import StepWizard from '@/components/StepWizard';
 
 export default function Home() {
   // Data
@@ -20,6 +21,7 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showResults, setShowResults] = useState(false);
   const [selectedRecipe, setSelectedRecipe] = useState(null);
+  const [isWizardOpen, setIsWizardOpen] = useState(false);
 
   // Ingredient lookup map
   const ingredientMap = useMemo(() => {
@@ -228,6 +230,13 @@ export default function Home() {
         </p>
       </header>
 
+      {/* Step Wizard Trigger Button */}
+      <div className="wizard-cta-container">
+        <button className="wizard-cta-button" onClick={() => setIsWizardOpen(true)}>
+          ✨ Dimmi cosa hai (Step by Step)
+        </button>
+      </div>
+
       {/* Search */}
       <SearchBar value={searchQuery} onChange={setSearchQuery} />
 
@@ -255,6 +264,20 @@ export default function Home() {
         onToggle={handleToggle}
         onFind={handleFind}
       />
+
+      {/* Step-by-step Selection Modal */}
+      {isWizardOpen && (
+        <StepWizard
+          ingredients={ingredients}
+          selectedIds={selectedIds}
+          onToggle={handleToggle}
+          onFinish={() => {
+            setIsWizardOpen(false);
+            handleFind();
+          }}
+          onClose={() => setIsWizardOpen(false)}
+        />
+      )}
 
       {/* Modal */}
       {selectedRecipe && (
