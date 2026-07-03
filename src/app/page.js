@@ -464,7 +464,7 @@ export default function Home() {
 
   // Main ingredient selection view
   return (
-    <div className="app-container">
+    <div className={`app-container ${uiMode === 'choice' ? 'lock-height' : ''}`}>
       {/* Auth Status/Control Header Bar */}
       <div 
         style={{ 
@@ -535,7 +535,7 @@ export default function Home() {
       </div>
 
       {/* Hero */}
-      <header className="hero" style={{ padding: '16px 0 24px' }}>
+      <header className="hero" style={{ padding: '16px 0 12px' }}>
         <h1 className="hero-logo" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
           <img src="/icon.svg" alt="Logo" style={{ width: '48px', height: '48px', borderRadius: '12px' }} />
           Frullator
@@ -547,12 +547,15 @@ export default function Home() {
 
       {uiMode === 'choice' ? (
         /* Schermata di scelta principale (due pulsanti) */
-        <div>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '100%' }}>
           <div className="wizard-cta-container">
             <button 
               className="wizard-cta-button primary" 
               onClick={() => setIsWizardOpen(true)}
             >
+              <div className="animated-icon-wrapper">
+                <div className="inline-shaker" />
+              </div>
               ✨ Crea frullato
               <span className="wizard-cta-subtext">Selezione guidata passo-passo</span>
             </button>
@@ -561,7 +564,10 @@ export default function Home() {
               className="wizard-cta-button" 
               onClick={() => setUiMode('grid')}
             >
-              {user ? '🧊 Gestisci il tuo Frigorifero' : '📝 Lista degli Ingredienti'}
+              <div className="animated-icon-wrapper">
+                <div className="inline-fridge" />
+              </div>
+              {user ? '🧊 Il tuo Frigorifero' : '📝 Lista Ingredienti'}
               <span className="wizard-cta-subtext">
                 {user ? 'Salva e gestisci cosa hai a disposizione' : 'Seleziona tutti gli ingredienti liberamente'}
               </span>
