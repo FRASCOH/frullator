@@ -4,6 +4,11 @@ import { useState } from 'react';
 
 const STEPS = [
   {
+    type: 'filters',
+    title: 'Preferenze alimentari 🌿',
+    subtitle: 'Quali filtri dietetici o nutrizionali preferisci?',
+  },
+  {
     category: 'bevanda',
     title: 'Scegli la base liquida 🥛',
     subtitle: 'Quale liquido o bevanda vuoi usare come base?',
@@ -30,11 +35,18 @@ const STEPS = [
   },
 ];
 
-export default function StepWizard({ ingredients, selectedIds, onToggle, onFinish, onClose }) {
+export default function StepWizard({ 
+  ingredients, 
+  selectedIds, 
+  onToggle, 
+  onFinish, 
+  onClose,
+  activeFilter,
+  setActiveFilter
+}) {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
 
   const step = STEPS[currentStepIndex];
-  const stepIngredients = ingredients.filter((ing) => ing.category === step.category);
 
   const handleNext = () => {
     if (currentStepIndex < STEPS.length - 1) {
@@ -49,8 +61,6 @@ export default function StepWizard({ ingredients, selectedIds, onToggle, onFinis
       setCurrentStepIndex((prev) => prev - 1);
     }
   };
-
-  const currentStepSelectedCount = stepIngredients.filter((ing) => selectedIds.has(ing.id)).length;
 
   return (
     <div className="modal-overlay" style={{ zIndex: 900 }}>
@@ -89,27 +99,71 @@ export default function StepWizard({ ingredients, selectedIds, onToggle, onFinis
           </button>
         </div>
 
-        {/* Ingredients Grid (Scrollable) */}
+        {/* Content (Scrollable) */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px', minHeight: '250px' }}>
-          <div className="ingredient-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(85px, 1fr))' }}>
-            {stepIngredients.map((ing) => {
-              const isSelected = selectedIds.has(ing.id);
-              return (
-                <button
-                  key={ing.id}
-                  id={`wizard-ingredient-${ing.id}`}
-                  className={`ingredient-card ${isSelected ? 'selected' : ''}`}
-                  onClick={() => onToggle(ing.id)}
-                  aria-pressed={isSelected}
-                  style={{ padding: '12px 4px 8px' }}
-                >
-                  <span className="ingredient-check" style={{ top: 2, right: 2, width: 16, height: 16, fontSize: '0.55rem' }}>✓</span>
-                  <span className="ingredient-emoji" style={{ fontSize: '1.4rem' }}>{ing.emoji}</span>
-                  <span className="ingredient-name" style={{ fontSize: '0.65rem' }}>{ing.name_it}</span>
-                </button>
-              );
-            })}
-          </div>
+          {step.type === 'filters' ? (
+            /* Preferenze alimentari / Filtri */
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '8px' }}>
+              <button
+                className={`category-tab ${activeFilter === 'all' ? 'active' : ''}`}
+                onClick={() => setActiveFilter('all')}
+                style={{ width: '100%', padding: '16px', fontSize: '1rem', justifyContent: 'flex-start', borderRadius: 'var(--radius-lg)' }}
+              >
+                🥗 Nessun filtro (Tutti i frullati)
+              </button>
+              <button
+                className={`category-tab ${activeFilter === 'vegan' ? 'active' : ''}`}
+                onClick={() => setActiveFilter('vegan')}
+                style={{ width: '100%', padding: '16px', fontSize: '1rem', justifyContent: 'flex-start', borderRadius: 'var(--radius-lg)' }}
+              >
+                🌱 Vegano
+              </button>
+              <button
+                className={`category-tab ${activeFilter === 'lactose-free' ? 'active' : ''}`}
+                onClick={() => setActiveFilter('lactose-free')}
+                style={{ width: '100%', padding: '16px', fontSize: '1rem', justifyContent: 'flex-start', borderRadius: 'var(--radius-lg)' }}
+              >
+                🥛 Senza Lattosio
+              </button>
+              <button
+                className={`category-tab ${activeFilter === 'high-protein' ? 'active' : ''}`}
+                onClick={() => setActiveFilter('high-protein')}
+                style={{ width: '100%', padding: '16px', fontSize: '1rem', justifyContent: 'flex-start', borderRadius: 'var(--radius-lg)' }}
+              >
+                💪 Proteici (almeno 15g)
+              </button>
+              <button
+                className={`category-tab ${activeFilter === 'low-calorie' ? 'active' : ''}`}
+                onClick={() => setActiveFilter('low-calorie')}
+                style={{ width: '100%', padding: '16px', fontSize: '1rem', justifyContent: 'flex-start', borderRadius: 'var(--radius-lg)' }}
+              >
+                ⚡ Leggeri (massimo 250 kcal)
+              </button>
+            </div>
+          ) : (
+            /* Ingredienti classici per categoria */
+            <div className="ingredient-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(85px, 1fr))' }}>
+              {ingredients
+                .filter((ing) => ing.category === step.category)
+                .map((ing) => {
+                  const isSelected = selectedIds.has(ing.id);
+                  return (
+                    <button
+                      key={ing.id}
+                      id={`wizard-ingredient-${ing.id}`}
+                      className={`ingredient-card ${isSelected ? 'selected' : ''}`}
+                      onClick={() => onToggle(ing.id)}
+                      aria-pressed={isSelected}
+                      style={{ padding: '12px 4px 8px' }}
+                    >
+                      <span className="ingredient-check" style={{ top: 2, right: 2, width: 16, height: 16, fontSize: '0.55rem' }}>✓</span>
+                      <span className="ingredient-emoji" style={{ fontSize: '1.4rem' }}>{ing.emoji}</span>
+                      <span className="ingredient-name" style={{ fontSize: '0.65rem' }}>{ing.name_it}</span>
+                    </button>
+                  );
+                })}
+            </div>
+          )}
         </div>
 
         {/* Wizard Footer (Sticky) */}

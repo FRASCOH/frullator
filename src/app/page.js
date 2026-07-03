@@ -505,12 +505,67 @@ export default function Home() {
       {/* Step Wizard Trigger Button */}
       <div className="wizard-cta-container">
         <button className="wizard-cta-button" onClick={() => setIsWizardOpen(true)}>
-          ✨ Dimmi cosa hai (Step by Step)
+          ✨ Dimmi cosa hai
         </button>
       </div>
 
       {/* Search */}
       <SearchBar value={searchQuery} onChange={setSearchQuery} />
+
+      {/* Sezione Preferiti in Home Page */}
+      {user && favorites.size > 0 && !searchQuery && (
+        <div style={{ marginBottom: '28px', animation: 'fadeInUp 0.6s var(--ease-out) 0.3s both' }}>
+          <h2 className="section-title">
+            ★ I tuoi preferiti <span className="count">({favorites.size})</span>
+          </h2>
+          <div className="popular-scroll" style={{ display: 'flex', gap: '12px', overflowX: 'auto', scrollbarWidth: 'none', padding: '4px 0 12px', WebkitOverflowScrolling: 'touch' }}>
+            {recipes
+              .filter((r) => favorites.has(r.id))
+              .map((recipe, index) => {
+                const recipeIngs = recipe.recipe_ingredients || [];
+                const emojis = recipeIngs
+                  .slice(0, 5)
+                  .map((ri) => ingredientMap[ri.ingredient_id]?.emoji || '')
+                  .join('');
+                const ingredientNames = recipeIngs
+                  .slice(0, 4)
+                  .map((ri) => ingredientMap[ri.ingredient_id]?.name_it || '')
+                  .filter(Boolean)
+                  .join(', ');
+
+                return (
+                  <div
+                    key={recipe.id}
+                    className="popular-card"
+                    onClick={() => handleRecipeClick(recipe)}
+                    style={{
+                      animationDelay: `${index * 0.1}s`,
+                      border: '1px solid rgba(245, 158, 11, 0.2)',
+                    }}
+                  >
+                    <div
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        height: '3px',
+                        background: recipe.color || 'var(--warning)',
+                        borderRadius: 'inherit',
+                      }}
+                    />
+                    <div className="popular-card-rank" style={{ color: 'var(--warning)' }}>
+                      Salvataggio preferito
+                    </div>
+                    <div className="popular-card-name">{recipe.name_it}</div>
+                    <div className="popular-card-ingredients">{ingredientNames}</div>
+                    <div className="popular-card-emojis">{emojis}</div>
+                  </div>
+                );
+              })}
+          </div>
+        </div>
+      )}
 
       {/* Ingredient Grid */}
       <IngredientGrid
@@ -534,6 +589,8 @@ export default function Home() {
           ingredients={ingredients}
           selectedIds={selectedIds}
           onToggle={handleToggle}
+          activeFilter={activeFilter}
+          setActiveFilter={setActiveFilter}
           onFinish={() => {
             setIsWizardOpen(false);
             handleFind();
