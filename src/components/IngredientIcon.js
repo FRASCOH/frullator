@@ -1,28 +1,13 @@
 import React from 'react';
 
-// Genera un'icona vettoriale coerente a partire dall'emoji o dal nome dell'ingrediente per evitare buchi visivi.
+// Genera un'icona vettoriale coerente a partire dal nome dell'ingrediente per evitare buchi visivi o emoji assenti.
 export default function IngredientIcon({ name, emoji, category, style }) {
   // Se c'è una emoji valida definita, usiamo quella come sorgente/icona primaria
   if (emoji && emoji.trim() !== '') {
-    return (
-      <span 
-        style={{ 
-          fontSize: '1.4rem', 
-          width: '38px',
-          height: '38px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          userSelect: 'none',
-          ...style 
-        }}
-      >
-        {emoji}
-      </span>
-    );
+    return <span style={{ fontSize: '1.5rem', ...style }}>{emoji}</span>;
   }
 
-  // Genera un badge vettoriale minimale colorato come alternativa universale se manca l'emoji nel DB
+  // Genera un badge vettoriale minimale colorato come alternativa universale
   const firstLetter = name ? name.trim().charAt(0).toUpperCase() : '🍉';
   
   // Colori coerenti in base alle categorie dell'ingrediente
@@ -63,7 +48,6 @@ export default function IngredientIcon({ name, emoji, category, style }) {
         fontFamily: 'var(--font-display)',
         boxShadow: 'var(--shadow-sm)',
         userSelect: 'none',
-        flexShrink: 0,
         ...style
       }}
     >
