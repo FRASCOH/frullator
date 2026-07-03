@@ -63,8 +63,8 @@ export default function Home() {
 
   // Matched recipes — sorted by match percentage and filters
   const matchedRecipes = useMemo(() => {
-    // Rimuoviamo il blocco obbligatorio sull'avere ingredienti selezionati se il filtro attivo è 'favorites'
-    if (selectedIds.size === 0 && activeFilter !== 'favorites') return [];
+    // Rimuoviamo il blocco obbligatorio sull'avere ingredienti selezionati se il filtro attivo è 'favorites' o 'popular'
+    if (selectedIds.size === 0 && activeFilter !== 'favorites' && activeFilter !== 'popular') return [];
 
     let filteredRecipes = recipes.map((recipe) => {
       const recipeIngs = recipe.recipe_ingredients || [];
@@ -83,14 +83,16 @@ export default function Home() {
       return { ...recipe, matchPercent, haveCount, totalRequired };
     });
 
-    // Applica soglia di match (se non siamo nella sezione preferiti generica)
-    if (activeFilter !== 'favorites') {
+    // Applica soglia di match (se non siamo in preferiti o più bevuti)
+    if (activeFilter !== 'favorites' && activeFilter !== 'popular') {
       filteredRecipes = filteredRecipes.filter((r) => r.matchPercent >= 50);
     }
 
     // Applica Filtri Alimentari / Obiettivi Fitness
     if (activeFilter === 'favorites') {
       filteredRecipes = filteredRecipes.filter((r) => favorites.has(r.id));
+    } else if (activeFilter === 'popular') {
+      filteredRecipes = filteredRecipes.filter((r) => r.popularity > 0);
     } else if (activeFilter === 'high-protein') {
       filteredRecipes = filteredRecipes.filter((r) => {
         const nut = recipeNutritionMap[r.id];
@@ -103,12 +105,24 @@ export default function Home() {
       });
     } else if (activeFilter === 'vegan') {
       filteredRecipes = filteredRecipes.filter((r) => {
-        // Verifica se tra i tag c'è 'vegano'
         return r.tags && r.tags.includes('vegano');
+      });
+    } else if (activeFilter === 'lactose-free') {
+      filteredRecipes = filteredRecipes.filter((r) => {
+        // Controlla se la ricetta NON contiene ingredienti contenenti lattosio (es. Latte vaccino (61), Yogurt greco (69), Yogurt naturale (70), Kefir (71))
+        const recipeIngs = r.recipe_ingredients || [];
+        const containsLactose = recipeIngs.some((ri) => 
+          [61, 69, 70, 71].includes(ri.ingredient_id)
+        );
+        return !containsLactose;
       });
     }
 
     return filteredRecipes.sort((a, b) => {
+      // Se siamo nei popolari, ordina principalmente per popolarità
+      if (activeFilter === 'popular') {
+        return (b.popularity || 0) - (a.popularity || 0);
+      }
       if (b.matchPercent !== a.matchPercent) return b.matchPercent - a.matchPercent;
       return (b.popularity || 0) - (a.popularity || 0);
     });
@@ -305,22 +319,32 @@ export default function Home() {
           <div 
             className="category-tabs" 
             style={{ 
-              padding: '4px 0 16px', 
-              borderBottom: '1px solid var(--glass-border)',
-              marginBottom: '16px',
-              animationDelay: '0.1s'
+              padding: '8px 0 16px', 
+              borderBottom: '1.5px solid var(--glass-border)',
+              marginBottom: '20px',
+              animationDelay: '0.1s',
+              gap: '10px'
             }}
           >
             <button
               className={`category-tab ${activeFilter === 'all' ? 'active' : ''}`}
               onClick={() => setActiveFilter('all')}
+              style={{ fontSize: '0.9rem', padding: '12px 18px' }}
             >
-              🥗 Tutti i frullati
+              🥗 Tutti
+            </button>
+            <button
+              className={`category-tab ${activeFilter === 'popular' ? 'active' : ''}`}
+              onClick={() => setActiveFilter('popular')}
+              style={{ fontSize: '0.9rem', padding: '12px 18px' }}
+            >
+              🔥 I più bevuti
             </button>
             {user && (
               <button
                 className={`category-tab ${activeFilter === 'favorites' ? 'active' : ''}`}
                 onClick={() => setActiveFilter('favorites')}
+                style={{ fontSize: '0.9rem', padding: '12px 18px' }}
               >
                 ★ Preferiti
               </button>
@@ -328,20 +352,30 @@ export default function Home() {
             <button
               className={`category-tab ${activeFilter === 'vegan' ? 'active' : ''}`}
               onClick={() => setActiveFilter('vegan')}
+              style={{ fontSize: '0.9rem', padding: '12px 18px' }}
             >
               🌱 Vegano
             </button>
             <button
+              className={`category-tab ${activeFilter === 'lactose-free' ? 'active' : ''}`}
+              onClick={() => setActiveFilter('lactose-free')}
+              style={{ fontSize: '0.9rem', padding: '12px 18px' }}
+            >
+              🥛 Senza Lattosio
+            </button>
+            <button
               className={`category-tab ${activeFilter === 'high-protein' ? 'active' : ''}`}
               onClick={() => setActiveFilter('high-protein')}
+              style={{ fontSize: '0.9rem', padding: '12px 18px' }}
             >
-              💪 Proteici (&ge;15g)
+              💪 Proteici
             </button>
             <button
               className={`category-tab ${activeFilter === 'low-calorie' ? 'active' : ''}`}
               onClick={() => setActiveFilter('low-calorie')}
+              style={{ fontSize: '0.9rem', padding: '12px 18px' }}
             >
-              🔥 Low Kcal (&le;250)
+              ⚡ Leggeri
             </button>
           </div>
 
@@ -477,15 +511,6 @@ export default function Home() {
 
       {/* Search */}
       <SearchBar value={searchQuery} onChange={setSearchQuery} />
-
-      {/* Popular Section */}
-      {!searchQuery && (
-        <PopularSection
-          recipes={popularRecipes}
-          ingredientMap={ingredientMap}
-          onRecipeClick={handleRecipeClick}
-        />
-      )}
 
       {/* Ingredient Grid */}
       <IngredientGrid
